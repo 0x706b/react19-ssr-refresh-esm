@@ -1,3 +1,4 @@
+import * as Babel from "@babel/core";
 import fs from "node:fs/promises";
 import * as TsNode from "ts-node";
 import { URL } from "url";
@@ -18,10 +19,27 @@ export async function resolve(specifier, context, nextResolve) {
     return result;
   }
 
+  if (child.pathname.includes("src/server/constants.ts")) {
+    return result;
+  }
+
   return {
     ...result,
     url: child.href + "?update=" + new Date().toISOString(),
   };
 }
 
-export const load = tsNodeEsmHooks.load;
+export async function load(url, context, defaultLoad) {
+  const tsNode             = await tsNodeEsmHooks.load(url, context, defaultLoad);
+  const { format, source } = tsNode;
+  if (format === "module" || format === "commonjs") {
+    const config = Babel.loadPartialConfig({
+      filename: url.split("?update=")[0],
+      plugins: ["babel-plugin-styled-components"],
+      presets: [["@babel/preset-react", { runtime: "automatic" }]],
+    });
+    const { code } = await Babel.transformAsync(source, config.options);
+    return { format, source: code, shortCircuit: true };
+  }
+  return tsNode;
+}
