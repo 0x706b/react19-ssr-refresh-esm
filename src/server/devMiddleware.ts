@@ -26,6 +26,7 @@ export function withDevMiddleware(app: Express): void {
   );
 
   app.use(
+    // @ts-expect-error
     webpackHotMiddleware(compiler, {
       log: false,
       path: "/__webpack_hmr",

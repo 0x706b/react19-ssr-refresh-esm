@@ -30,16 +30,24 @@ export async function resolve(specifier, context, nextResolve) {
 }
 
 export async function load(url, context, defaultLoad) {
-  const tsNode             = await tsNodeEsmHooks.load(url, context, defaultLoad);
-  const { format, source } = tsNode;
-  if (format === "module" || format === "commonjs") {
-    const config = Babel.loadPartialConfig({
-      filename: url.split("?update=")[0],
-      plugins: ["babel-plugin-styled-components"],
-      presets: [["@babel/preset-react", { runtime: "automatic" }]],
-    });
-    const { code } = await Babel.transformAsync(source, config.options);
-    return { format, source: code, shortCircuit: true };
+  try {
+    const tsNode           = await tsNodeEsmHooks.load(url, context, defaultLoad);
+    let { format, source } = tsNode;
+    if (source === undefined) {
+      return defaultLoad(url, context);
+    }
+    if (format === "module" || format === "commonjs") {
+      const config = Babel.loadPartialConfig({
+        filename: url.split("?update=")[0],
+        plugins: ["babel-plugin-styled-components"],
+        presets: [["@babel/preset-react", { runtime: "automatic" }]],
+      });
+      const { code } = await Babel.transformAsync(source, config.options);
+      return { format, source: code, shortCircuit: true };
+    }
+    return tsNode;
+  } catch (e) {
+    console.log(e);
+    throw e;
   }
-  return tsNode;
 }
