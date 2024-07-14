@@ -21,12 +21,11 @@ export function withDevMiddleware(app: Express): void {
     webpackDevMiddleware(compiler, {
       serverSideRender: true,
       publicPath: webpackConfig.output?.publicPath ?? "/",
-      writeToDisk: true
+      writeToDisk: true,
     }),
   );
 
   app.use(
-    // @ts-expect-error
     webpackHotMiddleware(compiler, {
       log: false,
       path: "/__webpack_hmr",

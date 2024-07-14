@@ -7,7 +7,6 @@
   "packageManager": "yarn@4.3.1",
   "scripts": {
     "build": "webpack",
-    "postinstall": "tsplus-install",
     "dev": "node --loader ./dev-server-loader.js ./src/devServer.ts"
   },
   "devDependencies": {
@@ -15,7 +14,6 @@
     "@babel/preset-react": "^7.24.7",
     "@fncts/eslint-config": "^0.0.19",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.15",
-    "@tsplus/installer": "^0.0.135",
     "@types/babel__core": "^7.20.5",
     "@types/express": "^4.17.21",
     "@types/node": "^20.14.10",
