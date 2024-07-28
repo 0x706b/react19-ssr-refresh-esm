@@ -1,22 +1,16 @@
 import type { RouteManifestEntry } from "../manifest.js";
 import type { NextFunction } from "express";
 import type * as express from "express";
-import type {
-  StaticHandlerContext} from "react-router-dom/server.js";
+import type { StaticHandlerContext } from "react-router-dom/server.js";
 
 import path from "node:path";
 import { Writable } from "node:stream";
 import url from "node:url";
 import React from "react";
 import { renderToPipeableStream } from "react-dom/server";
-import {
-  createStaticHandler,
-  createStaticRouter,
-  StaticRouterProvider,
-} from "react-router-dom/server.js";
+import { createStaticHandler, createStaticRouter, StaticRouterProvider } from "react-router-dom/server.js";
 import { ServerStyleSheet } from "styled-components";
 
-import { App } from "../../App.js";
 import { routes } from "../../routes.js";
 import { getRouteMatcher } from "../manifest.js";
 

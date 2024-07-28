@@ -39,7 +39,20 @@ export async function load(url, context, defaultLoad) {
     if (format === "module" || format === "commonjs") {
       const config = Babel.loadPartialConfig({
         filename: url.split("?update=")[0],
-        plugins: ["babel-plugin-styled-components"],
+        plugins: [
+          [
+            "babel-plugin-styled-components",
+            {
+              topLevelImportPaths: [
+                "@mui/material",
+                "@mui/material/*",
+                "@mui/system",
+                "@mui/styled-engine-sc",
+                "\\.\\./styles/styled",
+              ],
+            },
+          ],
+        ],
         presets: [["@babel/preset-react", { runtime: "automatic" }]],
       });
       const { code } = await Babel.transformAsync(source, config.options);

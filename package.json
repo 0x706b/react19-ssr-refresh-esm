@@ -47,6 +47,11 @@
   "resolutions": {
     "@types/react": "npm:types-react@rc",
     "@types/react-dom": "npm:types-react-dom@rc",
+    "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest",
     "webpack": "^5.93.0"
+  },
+  "dependencies": {
+    "@mui/material": "^5.16.5",
+    "@mui/styled-engine-sc": "6.0.0-alpha.18"
   }
 }

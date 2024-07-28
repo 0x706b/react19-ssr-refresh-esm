@@ -1,3 +1,4 @@
+import { Typography } from "@mui/material";
 import React from "react";
 
 function Home() {
@@ -12,13 +13,13 @@ function Home() {
     };
   }, []);
   return (
-    <p
-      css={`
-        color: ${color};
-      `}
+    <Typography
+      sx={{
+        color,
+      }}
     >
       Homepage
-    </p>
+    </Typography>
   );
 }
 
