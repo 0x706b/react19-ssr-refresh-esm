@@ -1,7 +1,5 @@
 import React from "react";
-import { Route, Routes } from "react-router";
-
-const Home = React.lazy(() => import("./pages/Home.js"));
+import { Outlet, useLocation } from "react-router";
 
 interface AppProps {
   readonly url?: string;
@@ -11,9 +9,7 @@ interface AppProps {
 export function App({ url }: AppProps) {
   return (
     <React.Suspense fallback={<p>Loading...</p>}>
-      <Routes location={url}>
-        <Route path="/" element={<Home />} />
-      </Routes>
+      <Outlet />
     </React.Suspense>
   );
 }

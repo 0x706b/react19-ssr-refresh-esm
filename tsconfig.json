@@ -4,7 +4,7 @@
     "lib": ["ESNext", "dom"],
     "baseUrl": ".",
     "module": "ESNext",
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "moduleResolution": "node",

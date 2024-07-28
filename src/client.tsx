@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import { App } from "./App";
+import { routes } from "./routes";
 
 const root = document.getElementById("app");
 
@@ -10,11 +10,11 @@ if (!root) {
   throw new Error("Cannot find 'app' element.");
 }
 
+const router = createBrowserRouter(routes);
+
 ReactDOM.hydrateRoot(
   root,
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <RouterProvider router={router} />
   </React.StrictMode>,
 );

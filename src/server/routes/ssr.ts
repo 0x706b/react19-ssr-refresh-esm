@@ -1,15 +1,23 @@
 import type { RouteManifestEntry } from "../manifest.js";
-import type { NextFunction, Request, Response } from "express";
+import type { NextFunction } from "express";
+import type * as express from "express";
+import type {
+  StaticHandlerContext} from "react-router-dom/server.js";
 
 import path from "node:path";
 import { Writable } from "node:stream";
 import url from "node:url";
 import React from "react";
 import { renderToPipeableStream } from "react-dom/server";
-import { StaticRouter } from "react-router-dom/server.js";
+import {
+  createStaticHandler,
+  createStaticRouter,
+  StaticRouterProvider,
+} from "react-router-dom/server.js";
 import { ServerStyleSheet } from "styled-components";
 
 import { App } from "../../App.js";
+import { routes } from "../../routes.js";
 import { getRouteMatcher } from "../manifest.js";
 
 export const htmlStart = (manifest: ReadonlyArray<RouteManifestEntry>, styleTags: string) => `
@@ -37,7 +45,9 @@ export const htmlEnd = (styleTags: string) => `</div>
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-export async function ssr(req: Request, res: Response, next: NextFunction): Promise<void> {
+const handler = createStaticHandler(routes);
+
+export async function ssr(req: express.Request, res: express.Response, next: NextFunction): Promise<void> {
   const match         = await getRouteMatcher(path.resolve(dirname, "../../../dist/route-manifest.json"));
   const routeManifest = match(req.url);
   if (!routeManifest) {
@@ -48,13 +58,15 @@ export async function ssr(req: Request, res: Response, next: NextFunction): Prom
 
   const sheet = new ServerStyleSheet();
 
+  const fetchRequest = createFetchRequest(req, res);
+  const context      = (await handler.query(fetchRequest)) as StaticHandlerContext;
+
+  const router = createStaticRouter(handler.dataRoutes, context);
+
   const root = sheet.collectStyles(
-    React.createElement(StaticRouter, {
-      location: req.url,
-      children: React.createElement(App, {
-        url: req.url,
-        manifest: routeManifest,
-      }),
+    React.createElement(StaticRouterProvider, {
+      router,
+      context,
     }),
   );
 
@@ -84,7 +96,10 @@ export async function ssr(req: Request, res: Response, next: NextFunction): Prom
 export class StyleSheetPassthrough extends Writable {
   private styles = "";
 
-  constructor(private sheet: ServerStyleSheet, private _writable: Writable) {
+  constructor(
+    private sheet: ServerStyleSheet,
+    private _writable: Writable,
+  ) {
     super();
   }
 
@@ -113,4 +128,39 @@ export class StyleSheetPassthrough extends Writable {
 
 async function importFresh<Path extends string>(modulePath: Path): Promise<any> {
   return import(`${modulePath}?update=${Date.now()}`);
+}
+
+function createFetchRequest(req: express.Request, res: express.Response) {
+  const origin = `${req.protocol}://${req.get("host")}`;
+  // Note: This had to take originalUrl into account for presumably vite's proxying
+  const url = new URL(req.originalUrl || req.url, origin);
+
+  const controller = new AbortController();
+  res.on("close", () => controller.abort());
+
+  const headers = new Headers();
+
+  for (const [key, values] of Object.entries(req.headers)) {
+    if (values) {
+      if (Array.isArray(values)) {
+        for (const value of values) {
+          headers.append(key, value);
+        }
+      } else {
+        headers.set(key, values);
+      }
+    }
+  }
+
+  const init: RequestInit = {
+    method: req.method,
+    headers,
+    signal: controller.signal,
+  };
+
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    init.body = req.body;
+  }
+
+  return new Request(url.href, init);
 }
